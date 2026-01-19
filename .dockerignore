@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.iml
+*.ipr
+*.iws
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.sts4-cache
+
+# Build outputs
+build/
+.gradle
+bin/
+out/
+dist/
+target/
+
+# Environment files (will be provided at runtime)
+.env
+.env.local
+.env.prod
+
+
+# Documentation
+*.md
+HELP.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+src/test/
+
+# CI/CD
+.github/
+ci-cd.yaml
+
+# Logs
+*.log
+logs/
