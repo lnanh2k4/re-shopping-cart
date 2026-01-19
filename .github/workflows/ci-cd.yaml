@@ -21,46 +21,32 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build & push Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USER }}/re-shopping-cart-web-app:latest
 
-      - name: SSH into EC2 and deploy
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            set -e
-
-            echo ">>> Login Docker Hub on EC2"
-            echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
-
-            echo ">>> Stop & remove old container"
             docker rm -f re-shopping-cart-web-app || true
-
-            echo ">>> Pull latest image"
             docker pull ${{ secrets.DOCKER_USER }}/re-shopping-cart-web-app:latest
-
-            echo ">>> Run container"
             docker run -d \
               --name re-shopping-cart-web-app \
               --restart unless-stopped \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
-              -e DB_URL="${{ secrets.DB_URL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              -e JAVA_OPTS="-Xms512m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0" \
+              -e DB_URL='${{ secrets.DB_URL }}' \
+              -e DB_USERNAME='${{ secrets.DB_USERNAME }}' \
+              -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
+              -e JAVA_OPTS="-Xms512m -Xmx512m" \
               -e TZ=UTC \
               ${{ secrets.DOCKER_USER }}/re-shopping-cart-web-app:latest
-
-            echo ">>> Container status"
-            docker ps --filter "name=re-shopping-cart-web-app"
-
-            echo ">>> Container logs (last 50 lines)"
-            docker logs --tail 50 re-shopping-cart-web-app
+            docker ps -a --filter name=re-shopping-cart-web-app
+```
